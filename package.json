@@ -1,0 +1,459 @@
+{
+  "name": "local-merge-request",
+  "displayName": "Local Merge Request",
+  "description": "%description%",
+  "version": "0.1.0",
+  "publisher": "GodefroyTARD",
+  "author": {
+    "name": "Godefroy Tard"
+  },
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#2E347A",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GodefroyTard/Local-merge-request.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GodefroyTard/Local-merge-request/issues"
+  },
+  "homepage": "https://github.com/GodefroyTard/Local-merge-request#readme",
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
+  "keywords": [
+    "code review",
+    "merge request",
+    "pull request",
+    "gitlab",
+    "local",
+    "diff",
+    "comments",
+    "claude"
+  ],
+  "engines": {
+    "vscode": "^1.90.0",
+    "node": ">=22"
+  },
+  "main": "./dist/extension.js",
+  "l10n": "./l10n",
+  "bin": {
+    "lreview": "./dist/cli.js"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "contributes": {
+    "views": {
+      "scm": [
+        {
+          "id": "lreview.reviews",
+          "name": "%view.name%",
+          "icon": "$(git-pull-request)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "lreview.reviews",
+        "contents": "%view.welcome%"
+      }
+    ],
+    "commands": [
+      {
+        "command": "lreview.refresh",
+        "title": "%command.refresh%",
+        "category": "%category%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "lreview.createReview",
+        "title": "%command.createReview%",
+        "category": "%category%",
+        "icon": "$(add)"
+      },
+      {
+        "command": "lreview.showClosed",
+        "title": "%command.showClosed%",
+        "category": "%category%",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "lreview.hideClosed",
+        "title": "%command.hideClosed%",
+        "category": "%category%",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "lreview.selectView",
+        "title": "%command.selectView%",
+        "category": "%category%",
+        "icon": "$(versions)"
+      },
+      {
+        "command": "lreview.openAll",
+        "title": "%command.openAll%",
+        "category": "%category%",
+        "icon": "$(diff-multiple)"
+      },
+      {
+        "command": "lreview.openOverview",
+        "title": "%command.openOverview%",
+        "category": "%category%",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "lreview.closeReview",
+        "title": "%command.closeReview%",
+        "category": "%category%",
+        "icon": "$(close)"
+      },
+      {
+        "command": "lreview.reopenReview",
+        "title": "%command.reopenReview%",
+        "category": "%category%",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "lreview.deleteReview",
+        "title": "%command.deleteReview%",
+        "category": "%category%",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "lreview.openFile",
+        "title": "%command.openFile%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.openThread",
+        "title": "%command.openThread%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.createThread",
+        "title": "%command.createThread%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.reply",
+        "title": "%command.reply%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.resolveThread",
+        "title": "%command.resolveThread%",
+        "category": "%category%",
+        "icon": "$(check)"
+      },
+      {
+        "command": "lreview.reopenThread",
+        "title": "%command.reopenThread%",
+        "category": "%category%",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "lreview.markAddressed",
+        "title": "%command.markAddressed%",
+        "category": "%category%",
+        "icon": "$(pass)"
+      },
+      {
+        "command": "lreview.changeSeverity",
+        "title": "%command.changeSeverity%",
+        "category": "%category%",
+        "icon": "$(tag)"
+      },
+      {
+        "command": "lreview.applySuggestion",
+        "title": "%command.applySuggestion%",
+        "category": "%category%",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "lreview.editMessage",
+        "title": "%command.editMessage%",
+        "category": "%category%",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "lreview.deleteMessage",
+        "title": "%command.deleteMessage%",
+        "category": "%category%",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "lreview.saveMessage",
+        "title": "%command.saveMessage%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.cancelEdit",
+        "title": "%command.cancelEdit%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.installCli",
+        "title": "%command.installCli%",
+        "category": "%category%",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "lreview.installSkill",
+        "title": "%command.installSkill%",
+        "category": "%category%",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "lreview.selectView",
+          "when": "false"
+        },
+        {
+          "command": "lreview.openAll",
+          "when": "false"
+        },
+        {
+          "command": "lreview.openOverview",
+          "when": "false"
+        },
+        {
+          "command": "lreview.closeReview",
+          "when": "false"
+        },
+        {
+          "command": "lreview.reopenReview",
+          "when": "false"
+        },
+        {
+          "command": "lreview.deleteReview",
+          "when": "false"
+        },
+        {
+          "command": "lreview.openFile",
+          "when": "false"
+        },
+        {
+          "command": "lreview.openThread",
+          "when": "false"
+        },
+        {
+          "command": "lreview.createThread",
+          "when": "false"
+        },
+        {
+          "command": "lreview.reply",
+          "when": "false"
+        },
+        {
+          "command": "lreview.resolveThread",
+          "when": "false"
+        },
+        {
+          "command": "lreview.reopenThread",
+          "when": "false"
+        },
+        {
+          "command": "lreview.markAddressed",
+          "when": "false"
+        },
+        {
+          "command": "lreview.changeSeverity",
+          "when": "false"
+        },
+        {
+          "command": "lreview.applySuggestion",
+          "when": "false"
+        },
+        {
+          "command": "lreview.editMessage",
+          "when": "false"
+        },
+        {
+          "command": "lreview.deleteMessage",
+          "when": "false"
+        },
+        {
+          "command": "lreview.saveMessage",
+          "when": "false"
+        },
+        {
+          "command": "lreview.cancelEdit",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "lreview.createReview",
+          "when": "view == lreview.reviews",
+          "group": "navigation@1"
+        },
+        {
+          "command": "lreview.refresh",
+          "when": "view == lreview.reviews",
+          "group": "navigation@2"
+        },
+        {
+          "command": "lreview.showClosed",
+          "when": "view == lreview.reviews && !lreview.showClosed",
+          "group": "navigation@3"
+        },
+        {
+          "command": "lreview.hideClosed",
+          "when": "view == lreview.reviews && lreview.showClosed",
+          "group": "navigation@3"
+        },
+        {
+          "command": "lreview.installCli",
+          "when": "view == lreview.reviews",
+          "group": "9_setup@1"
+        },
+        {
+          "command": "lreview.installSkill",
+          "when": "view == lreview.reviews",
+          "group": "9_setup@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "lreview.createReview",
+          "when": "view == lreview.reviews && viewItem == repo",
+          "group": "inline"
+        },
+        {
+          "command": "lreview.selectView",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "inline@1"
+        },
+        {
+          "command": "lreview.openAll",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "inline@2"
+        },
+        {
+          "command": "lreview.selectView",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "1_review@1"
+        },
+        {
+          "command": "lreview.openAll",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "1_review@2"
+        },
+        {
+          "command": "lreview.openOverview",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "1_review@3"
+        },
+        {
+          "command": "lreview.closeReview",
+          "when": "view == lreview.reviews && viewItem == review-open",
+          "group": "2_state@1"
+        },
+        {
+          "command": "lreview.reopenReview",
+          "when": "view == lreview.reviews && viewItem == review-closed",
+          "group": "2_state@1"
+        },
+        {
+          "command": "lreview.deleteReview",
+          "when": "view == lreview.reviews && viewItem =~ /^review-/",
+          "group": "2_state@2"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "lreview.createThread",
+          "when": "commentController == local-review && commentThreadIsEmpty",
+          "group": "inline"
+        },
+        {
+          "command": "lreview.reply",
+          "when": "commentController == local-review && !commentThreadIsEmpty",
+          "group": "inline"
+        }
+      ],
+      "comments/commentThread/title": [
+        {
+          "command": "lreview.applySuggestion",
+          "when": "commentController == local-review && commentThread =~ /has-suggestion/",
+          "group": "inline@1"
+        },
+        {
+          "command": "lreview.markAddressed",
+          "when": "commentController == local-review && commentThread =~ /status-open/",
+          "group": "inline@2"
+        },
+        {
+          "command": "lreview.resolveThread",
+          "when": "commentController == local-review && commentThread =~ /status-(open|addressed)/",
+          "group": "inline@3"
+        },
+        {
+          "command": "lreview.reopenThread",
+          "when": "commentController == local-review && commentThread =~ /status-(addressed|resolved)/",
+          "group": "inline@4"
+        },
+        {
+          "command": "lreview.changeSeverity",
+          "when": "commentController == local-review && commentThread =~ /lreview/",
+          "group": "inline@5"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "lreview.editMessage",
+          "when": "commentController == local-review && comment == own",
+          "group": "inline@1"
+        },
+        {
+          "command": "lreview.deleteMessage",
+          "when": "commentController == local-review && comment == own",
+          "group": "inline@2"
+        }
+      ],
+      "comments/comment/context": [
+        {
+          "command": "lreview.saveMessage",
+          "when": "commentController == local-review",
+          "group": "inline@1"
+        },
+        {
+          "command": "lreview.cancelEdit",
+          "when": "commentController == local-review",
+          "group": "inline@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "package": "npm run build && vsce package --no-dependencies -o local-merge-request.vsix",
+    "publish": "npm run build && vsce publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  },
+  "dependencies": {
+    "diff": "^9.0.0"
+  },
+  "private": true
+}
