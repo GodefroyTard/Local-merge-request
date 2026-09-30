@@ -23,7 +23,7 @@ Nothing leaves your machine: reviews are stored inside the repository's `.git` d
   the commented lines are unchanged. Nothing is staged or committed.
 - **Viewed files** checkboxes (reset when the file changes in a later version), per-file thread counts,
   *open all files* in the multi-diff editor, live refresh when threads change on disk.
-- **File tree or flat list** of changed files, with a context menu to open the diff, open the working file, or copy
+- **File tree or flat list** of changed files, colored by status with added/removed line counts, with a context menu to open the diff, open the working file, or copy
   the absolute or relative path.
 - **Claude Code integration**: the `lreview` CLI and a Claude Code skill let Claude list your threads, fix the code,
   reply and mark threads addressed. Only you can resolve a thread.

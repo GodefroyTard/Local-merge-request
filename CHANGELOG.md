@@ -4,6 +4,7 @@
 
 - Changed files shown as a folder tree (toggle back to a flat list from the view title bar).
 - File context menu: open diff, open the working file, copy path, copy relative path.
+- Changed files show their added/removed line counts and a colored status letter, like the Source Control view.
 
 ## 0.1.0
 

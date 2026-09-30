@@ -15,6 +15,7 @@ import {
   viewSides,
 } from "../core";
 import { CommentsView } from "./comments";
+import { ChangeDecorations } from "./decorations";
 import { ContentProvider } from "./content";
 import { getGitApi, GitRepository } from "./gitApi";
 import { installCli, installSkill, refreshInstalledCli } from "./install";
@@ -37,6 +38,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     treeView,
     comments,
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, new ContentProvider(manager)),
+    vscode.window.registerFileDecorationProvider(new ChangeDecorations()),
   );
   void vscode.commands.executeCommand("setContext", "lreview.showClosed", false);
   void vscode.commands.executeCommand("setContext", "lreview.treeLayout", manager.treeLayout);

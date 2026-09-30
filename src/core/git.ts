@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import * as path from "node:path";
-import { ChangeStatus, FileChange } from "./types";
+import { ChangeStatus, FileChange, LineStats } from "./types";
 
 export class GitError extends Error {
   constructor(
@@ -73,6 +73,21 @@ export async function changedFiles(repo: string, from: string, to: string | null
     }
   }
   return files;
+}
+
+/** Added and removed line counts per right-side path; null counts for binary files. */
+export async function diffStats(repo: string, from: string, to: string | null): Promise<Map<string, LineStats>> {
+  const args = ["diff", "--numstat", "-M", "-z", "--no-ext-diff", from];
+  if (to) args.push(to);
+  const parts = (await git(repo, args)).split("\0");
+  const stats = new Map<string, LineStats>();
+  for (let i = 0; i < parts.length - 1; ) {
+    const [added, removed, file] = parts[i++].split("\t");
+    // Renames leave the path empty and put the old and new paths in the next two fields.
+    const p = file || (i++, parts[i++]);
+    stats.set(p, added === "-" ? { added: null, removed: null } : { added: Number(added), removed: Number(removed) });
+  }
+  return stats;
 }
 
 /** File content at a commit, or null when the path does not exist there. */

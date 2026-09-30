@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { describe, expect, test } from "vitest";
-import { changedFiles, commonDir, mergeBase, resolveCommit, showFile, blobId, topLevel } from "../src/core/git";
+import { changedFiles, diffStats, commonDir, mergeBase, resolveCommit, showFile, blobId, topLevel } from "../src/core/git";
 import { readJson, updateJson } from "../src/core/fsutil";
 import { Store } from "../src/core/store";
 import { createReview } from "../src/core/reviews";
@@ -26,6 +26,22 @@ describe("git wrapper", () => {
     const files = await changedFiles(repo.dir, base, head);
     expect(files).toContainEqual({ status: "M", path: "a.txt", oldPath: "a.txt" });
     expect(files).toContainEqual({ status: "R", path: "c.txt", oldPath: "b.txt" });
+  });
+
+  test("line stats per file, including renames and binaries", async () => {
+    const repo = TestRepo.create();
+    const base = repo.commit({ "a.txt": "a\nb\n", "b.txt": "one\ntwo\nthree\nfour\n" });
+    repo.git("mv", "b.txt", "c.txt");
+    repo.write("c.txt", "one\ntwo\nthree\nfour\nfive\n");
+    const head = repo.commit({ "a.txt": "a\nB\nc\n", "bin.dat": "\0\x01" });
+
+    const stats = await diffStats(repo.dir, base, head);
+    expect(stats.get("a.txt")).toEqual({ added: 2, removed: 1 });
+    expect(stats.get("c.txt")).toEqual({ added: 1, removed: 0 });
+    expect(stats.get("bin.dat")).toEqual({ added: null, removed: null });
+
+    repo.write("a.txt", "changed\n");
+    expect((await diffStats(repo.dir, head, null)).get("a.txt")).toEqual({ added: 1, removed: 3 });
   });
 
   test("diff against the working tree", async () => {

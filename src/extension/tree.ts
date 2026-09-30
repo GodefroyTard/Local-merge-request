@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { FileChange, isViewed, latestVersion, Review } from "../core";
+import { FileChange, isViewed, latestVersion, LineStats, Review } from "../core";
+import { decorationUri } from "./decorations";
 import { buildFileTree, Entry } from "./fileTree";
 import { changeLabel, firstLine, formatDate, severityLabel, statusLabel, threadIcon } from "./labels";
 import { PlacedThread, ReviewManager, viewLabel } from "./manager";
@@ -15,7 +16,16 @@ export type Node =
   | { type: "outside"; repo: string; review: string; threads: PlacedThread[] }
   | { type: "thread"; repo: string; review: string; placed: PlacedThread };
 
-export type FileNode = { type: "file"; repo: string; review: string; change: FileChange; threads: PlacedThread[]; viewed: boolean; checkable: boolean };
+export type FileNode = {
+  type: "file";
+  repo: string;
+  review: string;
+  change: FileChange;
+  stats?: LineStats;
+  threads: PlacedThread[];
+  viewed: boolean;
+  checkable: boolean;
+};
 export type FolderNode = { type: "folder"; repo: string; review: string; path: string; label: string; children: (FolderNode | FileNode)[] };
 
 const t = vscode.l10n.t;
@@ -84,7 +94,7 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
       threads.forEach((t) => listed.add(t));
       const checkable = data.right !== null && change.status !== "D";
       const viewed = checkable && (await isViewed(state.store, review, data.right!, change.path));
-      files.push({ type: "file", repo, review: id, change, threads, viewed, checkable });
+      files.push({ type: "file", repo, review: id, change, stats: data.stats.get(change.path), threads, viewed, checkable });
     }
     if (this.manager.treeLayout) {
       const toNode = (e: Entry<FileNode>): FolderNode | FileNode =>
@@ -161,11 +171,14 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
           node.threads.length ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None,
         );
         item.id = `file:${node.repo}:${node.review}:${change.path}`;
-        item.resourceUri = vscode.Uri.file(path.join(node.repo, change.path));
+        item.resourceUri = decorationUri(change);
         const dir = path.dirname(change.path);
         const showDir = !m.treeLayout && dir !== ".";
         const rename = change.status === "R" ? `← ${change.oldPath} · ` : "";
-        item.description = `${rename}${showDir ? dir + " · " : ""}${changeLabel(change.status)}${n ? ` · 💬 ${n}` : ""}`;
+        const parts = [statsLabel(node.stats)];
+        if (showDir) parts.unshift(dir);
+        if (n) parts.push(`💬 ${n}`);
+        item.description = rename + parts.filter(Boolean).join(" · ");
         item.tooltip = `${change.path} (${changeLabel(change.status)})`;
         if (node.checkable) {
           item.checkboxState = node.viewed ? vscode.TreeItemCheckboxState.Checked : vscode.TreeItemCheckboxState.Unchecked;
@@ -198,6 +211,12 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
       }
     }
   }
+}
+
+function statsLabel(stats: LineStats | undefined): string {
+  if (!stats) return "";
+  if (stats.added === null) return t("binary");
+  return `+${stats.added} −${stats.removed}`;
 }
 
 function reviewTooltip(review: Review): vscode.MarkdownString {

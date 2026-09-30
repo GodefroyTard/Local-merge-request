@@ -5,6 +5,7 @@ import {
   FileChange,
   getVersion,
   latestVersion,
+  LineStats,
   Location,
   Locator,
   refreshReview,
@@ -14,6 +15,7 @@ import {
   View,
   viewFiles,
   viewSides,
+  viewStats,
 } from "../core";
 
 export interface RepoState {
@@ -37,6 +39,7 @@ export interface ViewData {
   left: string;
   right: string | null;
   files: FileChange[];
+  stats: Map<string, LineStats>;
   threads: PlacedThread[];
 }
 
@@ -246,7 +249,7 @@ export class ReviewManager implements vscode.Disposable {
   private async computeViewData(root: string, review: Review, view: View): Promise<ViewData> {
     const state = this.repos.get(root)!;
     const { left, right } = viewSides(review, view);
-    const files = await viewFiles(state.store, review, view);
+    const [files, stats] = await Promise.all([viewFiles(state.store, review, view), viewStats(state.store, review, view)]);
     const locator = new Locator(state.store, review);
     const threads: PlacedThread[] = [];
     for (const thread of this.threads(root, review.id)) {
@@ -271,6 +274,6 @@ export class ReviewManager implements vscode.Disposable {
           : { thread, location: loc, outdated: false, path: loc.path },
       );
     }
-    return { view, left, right, files, threads };
+    return { view, left, right, files, stats, threads };
   }
 }

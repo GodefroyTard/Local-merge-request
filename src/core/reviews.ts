@@ -1,8 +1,8 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import { blobId, changedFiles, mergeBase, resolveCommit, showFile } from "./git";
+import { blobId, changedFiles, diffStats, mergeBase, resolveCommit, showFile } from "./git";
 import { newId, Store } from "./store";
-import { FileChange, Review, ReviewError, SCHEMA_VERSION, Version, View } from "./types";
+import { FileChange, LineStats, Review, ReviewError, SCHEMA_VERSION, Version, View } from "./types";
 
 const now = () => new Date().toISOString();
 
@@ -97,6 +97,11 @@ export function viewSides(review: Review, view: View): { left: string; right: st
 export function viewFiles(store: Store, review: Review, view: View): Promise<FileChange[]> {
   const { left, right } = viewSides(review, view);
   return changedFiles(store.repo, left, right);
+}
+
+export function viewStats(store: Store, review: Review, view: View): Promise<Map<string, LineStats>> {
+  const { left, right } = viewSides(review, view);
+  return diffStats(store.repo, left, right);
 }
 
 /** Content at a commit, or in the working tree when `sha` is null; null when the file does not exist. */

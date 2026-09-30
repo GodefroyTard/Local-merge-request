@@ -85,4 +85,9 @@ export interface FileChange {
   oldPath: string;
 }
 
+export interface LineStats {
+  added: number | null;
+  removed: number | null;
+}
+
 export class ReviewError extends Error {}
