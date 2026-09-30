@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Changed files shown as a folder tree (toggle back to a flat list from the view title bar).
+- File context menu: open diff, open the working file, copy path, copy relative path.
+
 ## 0.1.0
 
 First release.

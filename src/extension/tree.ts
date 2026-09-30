@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
 import { FileChange, isViewed, latestVersion, Review } from "../core";
+import { buildFileTree, Entry } from "./fileTree";
 import { changeLabel, firstLine, formatDate, severityLabel, statusLabel, threadIcon } from "./labels";
 import { PlacedThread, ReviewManager, viewLabel } from "./manager";
 
@@ -9,9 +10,13 @@ export type Node =
   | { type: "review"; repo: string; review: string }
   | { type: "viewSelector"; repo: string; review: string }
   | { type: "general"; repo: string; review: string; threads: PlacedThread[] }
-  | { type: "file"; repo: string; review: string; change: FileChange; threads: PlacedThread[]; viewed: boolean; checkable: boolean }
+  | FolderNode
+  | FileNode
   | { type: "outside"; repo: string; review: string; threads: PlacedThread[] }
   | { type: "thread"; repo: string; review: string; placed: PlacedThread };
+
+export type FileNode = { type: "file"; repo: string; review: string; change: FileChange; threads: PlacedThread[]; viewed: boolean; checkable: boolean };
+export type FolderNode = { type: "folder"; repo: string; review: string; path: string; label: string; children: (FolderNode | FileNode)[] };
 
 const t = vscode.l10n.t;
 
@@ -48,6 +53,8 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
           .map((r) => ({ type: "review", repo: node.repo, review: r.id }));
       case "review":
         return this.reviewChildren(node.repo, node.review);
+      case "folder":
+        return node.children;
       case "general":
       case "file":
       case "outside":
@@ -66,6 +73,7 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
     const general = data.threads.filter((t) => t.path === null);
     nodes.push({ type: "general", repo, review: id, threads: general });
 
+    const files: FileNode[] = [];
     const listed = new Set<PlacedThread>();
     for (const change of data.files) {
       const threads = data.threads.filter((t) => {
@@ -76,7 +84,14 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
       threads.forEach((t) => listed.add(t));
       const checkable = data.right !== null && change.status !== "D";
       const viewed = checkable && (await isViewed(state.store, review, data.right!, change.path));
-      nodes.push({ type: "file", repo, review: id, change, threads, viewed, checkable });
+      files.push({ type: "file", repo, review: id, change, threads, viewed, checkable });
+    }
+    if (this.manager.treeLayout) {
+      const toNode = (e: Entry<FileNode>): FolderNode | FileNode =>
+        e.kind === "leaf" ? e.item : { type: "folder", repo, review: id, path: e.path, label: e.label, children: e.children.map(toNode) };
+      nodes.push(...buildFileTree(files, (f) => f.change.path).map(toNode));
+    } else {
+      nodes.push(...files);
     }
     const outside = data.threads.filter((t) => t.path !== null && !listed.has(t));
     if (outside.length) nodes.push({ type: "outside", repo, review: id, threads: outside });
@@ -129,6 +144,15 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
         item.command = { command: "lreview.openOverview", title: t("Open"), arguments: [{ type: "review", repo: node.repo, review: node.review }] };
         return item;
       }
+      case "folder": {
+        const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded);
+        item.id = `folder:${node.repo}:${node.review}:${node.path}`;
+        item.resourceUri = vscode.Uri.file(path.join(node.repo, node.path));
+        item.iconPath = vscode.ThemeIcon.Folder;
+        item.tooltip = node.path;
+        item.contextValue = "folder";
+        return item;
+      }
       case "file": {
         const { change } = node;
         const n = unresolved(node.threads);
@@ -139,13 +163,14 @@ export class ReviewTree implements vscode.TreeDataProvider<Node> {
         item.id = `file:${node.repo}:${node.review}:${change.path}`;
         item.resourceUri = vscode.Uri.file(path.join(node.repo, change.path));
         const dir = path.dirname(change.path);
+        const showDir = !m.treeLayout && dir !== ".";
         const rename = change.status === "R" ? `← ${change.oldPath} · ` : "";
-        item.description = `${rename}${dir === "." ? "" : dir + " · "}${changeLabel(change.status)}${n ? ` · 💬 ${n}` : ""}`;
+        item.description = `${rename}${showDir ? dir + " · " : ""}${changeLabel(change.status)}${n ? ` · 💬 ${n}` : ""}`;
         item.tooltip = `${change.path} (${changeLabel(change.status)})`;
         if (node.checkable) {
           item.checkboxState = node.viewed ? vscode.TreeItemCheckboxState.Checked : vscode.TreeItemCheckboxState.Unchecked;
         }
-        item.contextValue = "file";
+        item.contextValue = change.status === "D" ? "file-deleted" : "file";
         item.command = { command: "lreview.openFile", title: t("Open diff"), arguments: [node] };
         return item;
       }

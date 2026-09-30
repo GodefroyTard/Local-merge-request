@@ -92,6 +92,18 @@
         "icon": "$(eye-closed)"
       },
       {
+        "command": "lreview.viewAsTree",
+        "title": "%command.viewAsTree%",
+        "category": "%category%",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "lreview.viewAsList",
+        "title": "%command.viewAsList%",
+        "category": "%category%",
+        "icon": "$(list-flat)"
+      },
+      {
         "command": "lreview.selectView",
         "title": "%command.selectView%",
         "category": "%category%",
@@ -130,6 +142,22 @@
       {
         "command": "lreview.openFile",
         "title": "%command.openFile%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.openWorkingFile",
+        "title": "%command.openWorkingFile%",
+        "category": "%category%",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "lreview.copyPath",
+        "title": "%command.copyPath%",
+        "category": "%category%"
+      },
+      {
+        "command": "lreview.copyRelativePath",
+        "title": "%command.copyRelativePath%",
         "category": "%category%"
       },
       {
@@ -289,6 +317,18 @@
         {
           "command": "lreview.cancelEdit",
           "when": "false"
+        },
+        {
+          "command": "lreview.openWorkingFile",
+          "when": "false"
+        },
+        {
+          "command": "lreview.copyPath",
+          "when": "false"
+        },
+        {
+          "command": "lreview.copyRelativePath",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -311,6 +351,16 @@
           "command": "lreview.hideClosed",
           "when": "view == lreview.reviews && lreview.showClosed",
           "group": "navigation@3"
+        },
+        {
+          "command": "lreview.viewAsTree",
+          "when": "view == lreview.reviews && !lreview.treeLayout",
+          "group": "navigation@4"
+        },
+        {
+          "command": "lreview.viewAsList",
+          "when": "view == lreview.reviews && lreview.treeLayout",
+          "group": "navigation@4"
         },
         {
           "command": "lreview.installCli",
@@ -368,6 +418,31 @@
           "command": "lreview.deleteReview",
           "when": "view == lreview.reviews && viewItem =~ /^review-/",
           "group": "2_state@2"
+        },
+        {
+          "command": "lreview.openWorkingFile",
+          "when": "view == lreview.reviews && viewItem == file",
+          "group": "inline"
+        },
+        {
+          "command": "lreview.openFile",
+          "when": "view == lreview.reviews && viewItem =~ /^file/",
+          "group": "1_open@1"
+        },
+        {
+          "command": "lreview.openWorkingFile",
+          "when": "view == lreview.reviews && viewItem == file",
+          "group": "1_open@2"
+        },
+        {
+          "command": "lreview.copyPath",
+          "when": "view == lreview.reviews && viewItem =~ /^(file|folder)/",
+          "group": "2_copy@1"
+        },
+        {
+          "command": "lreview.copyRelativePath",
+          "when": "view == lreview.reviews && viewItem =~ /^(file|folder)/",
+          "group": "2_copy@2"
         }
       ],
       "comments/commentThread/context": [

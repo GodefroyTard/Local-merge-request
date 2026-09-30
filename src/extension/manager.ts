@@ -42,6 +42,7 @@ export interface ViewData {
 
 const VIEWS_KEY = "lreview.views";
 const SEEN_KEY = "lreview.seenVersions";
+const TREE_LAYOUT_KEY = "lreview.treeLayout";
 
 export function viewLabel(review: Review, view: View): string {
   const latest = latestVersion(review).n;
@@ -216,6 +217,15 @@ export class ReviewManager implements vscode.Disposable {
     if (seen[review.id] === latestVersion(review).n) return;
     seen[review.id] = latestVersion(review).n;
     await this.memento.update(SEEN_KEY, seen);
+  }
+
+  get treeLayout(): boolean {
+    return this.memento.get<boolean>(TREE_LAYOUT_KEY, true);
+  }
+
+  async setTreeLayout(tree: boolean): Promise<void> {
+    await this.memento.update(TREE_LAYOUT_KEY, tree);
+    this.changed.fire();
   }
 
   // ---- view data -----------------------------------------------------------

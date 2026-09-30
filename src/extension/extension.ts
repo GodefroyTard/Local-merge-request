@@ -20,10 +20,11 @@ import { getGitApi, GitRepository } from "./gitApi";
 import { installCli, installSkill, refreshInstalledCli } from "./install";
 import { errorMessage, formatDate } from "./labels";
 import { ReviewManager, viewLabel } from "./manager";
-import { Node, ReviewTree } from "./tree";
+import { FileNode, FolderNode, Node, ReviewTree } from "./tree";
 import { SCHEME, toUri } from "./uris";
 
 type ReviewNode = Extract<Node, { type: "review" }>;
+type PathNode = FileNode | FolderNode;
 
 const t = vscode.l10n.t;
 
@@ -38,6 +39,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, new ContentProvider(manager)),
   );
   void vscode.commands.executeCommand("setContext", "lreview.showClosed", false);
+  void vscode.commands.executeCommand("setContext", "lreview.treeLayout", manager.treeLayout);
 
   const guard =
     <A extends unknown[]>(fn: (...args: A) => Promise<unknown>) =>
@@ -170,6 +172,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
   );
 
+  const setLayout = (tree: boolean) =>
+    guard(async () => {
+      await vscode.commands.executeCommand("setContext", "lreview.treeLayout", tree);
+      await manager.setTreeLayout(tree);
+    });
+  register("lreview.viewAsTree", setLayout(true));
+  register("lreview.viewAsList", setLayout(false));
+
   register(
     "lreview.createReview",
     guard(async (node?: { repo: string }) => {
@@ -222,6 +232,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     guard(async (node: Extract<Node, { type: "file" }>) => {
       await openDiff(node.repo, reviewOf(node), node.change);
     }),
+  );
+
+  register(
+    "lreview.openWorkingFile",
+    guard(async (node: FileNode) => {
+      await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(path.join(node.repo, node.change.path)));
+    }),
+  );
+
+  const relativePath = (node: PathNode) => (node.type === "file" ? node.change.path : node.path);
+  register(
+    "lreview.copyPath",
+    guard(async (node: PathNode) => vscode.env.clipboard.writeText(path.join(node.repo, relativePath(node)))),
+  );
+  register(
+    "lreview.copyRelativePath",
+    guard(async (node: PathNode) => vscode.env.clipboard.writeText(relativePath(node))),
   );
 
   register(
